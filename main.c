@@ -1,51 +1,66 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <time.h>
 
-signed short scaleVolume(int sample, float sFactor)
+#define AMOUNT 1000000
+
+int16_t lookup[65536];
+float factor;
+
+int16_t simpleScale(int s, float sFactor)
 {
-	return sFactor > 0 && sFactor < 1 ? sample * sFactor : sample;
+	return sFactor > 0 && sFactor < 1 ? s * sFactor : s;
 }
 
-void newFactor(unsigned int *arr, float factor)
-{
-	printf("\nCHANGED -> %f\n", factor);
-	if(factor <= 0 && factor >= 1.0) {
-		factor = 1.0;
-	}
-	
+void initializeLookup() {
 	int i;
 	for(i = 0; i < 65536; i++) {
-		arr[i] = (rand() % 100 - 0);
-		arr[i] *= factor;
-		//printf("%d : %d\n", i, arr[i]);
+		lookup[i] = i * factor;
 	}
 }
+
+int16_t arrayScale(int s, float sFactor)
+{
+	if(sFactor != factor) {
+		factor = sFactor;
+		initializeLookup();
+	}
+	return lookup[s];
+}
+
 
 int main()
 {
-	int i;
-	int j;
-	unsigned int arr[65536];
-	
+	int i, j;
+	factor = 0.5;
+
 	srand(time(NULL));
 	
-	// NORMAL SCALING
+	
+	
+	// SMPLE SCALING
 	clock_t start1 = clock();
-	for(i = 0; i <= 1000000; i++) {
-		unsigned int sampleSize =  ((unsigned int)(rand() % 100 -0));
-		float scaleFactor = 0.5;
-		scaleVolume(rand() % 100, scaleFactor);
-		//printf("%d\n", n);
+	for(i = 0; i <= AMOUNT; i++) {
+		int16_t s = simpleScale(rand() % 100, factor);
 	}
-	printf("Finished in about %.0fms\n", (double)clock() - start1/CLOCKS_PER_SEC);
+	clock_t end1 = clock();
+	
+	
+	
 	
 	// SCALING WITH ARRAY
-	newFactor(arr, /*(float)(rand() % 1)*/0.5);
+	initializeLookup();
 	clock_t start2 = clock();
-	for(j = 0; j < 65536; j++) {
-		printf("%d : %d\n", j, arr[j]);
+	for(j = 0; j <= AMOUNT; j++) {
+		int16_t s = arrayScale(rand() % 100, factor);
 	}
-	printf("Finished in about %.0fms\n", (double)clock() - start2/CLOCKS_PER_SEC);
+	clock_t end2 = clock();
+	
+	
+	
+	
+	printf("Finished in about %.0fms\n", (double)end1 - start1/CLOCKS_PER_SEC);
+	printf("Finished in about %.0fms\n", (double)end2 - start2/CLOCKS_PER_SEC);
 	
 	
 	return 0;
