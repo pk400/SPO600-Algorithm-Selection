@@ -4,7 +4,7 @@
 int main()
 {
 	int i;
-	for(i = 0; i <= 1550000; i++) {
+	for(i = 0; i < 1550000; i++) {
 		printf("%d\n", rand());
 	}
 	

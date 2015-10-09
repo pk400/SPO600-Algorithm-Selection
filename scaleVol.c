@@ -2,9 +2,9 @@
 #include <stdint.h>
 #include <time.h>
 
-#define VOL_CHANGE(N) 96875*N
+#define NUM_ENTRIES 1550000
 
-float factor = 0.5;
+float factor;
 
 int16_t scaleVolume(int16_t sample, float vol)
 {
@@ -13,49 +13,49 @@ int16_t scaleVolume(int16_t sample, float vol)
 
 int main(int argc, char** argv)
 {
-	if(!argv[1])
-		return 0;
+	if(argc < 2) { printf("Needs 1 arguement... Try again."); return 0; }
 
-	// Setup
 	FILE *fin, *fout;
 	clock_t start, end;
 	char line[32], res[32];
+	int linectr = 0, k, volchange[16], v = 0;
+	
+	factor = 1.0;
 	
 	fin 	= fopen(argv[1], "r");
-	fout 	= fopen("out", "w");
+	fout 	= fopen("outScale", "w");
 
-	start = clock();
+	for(k = 0; k < 16; volchange[k] = (NUM_ENTRIES/16) * k, k++);
 	
-	// Process
-	while(fgets(line, 32, fin) != NULL) {
-		switch(counter) {
-			case VOL_CHANGE(1): 	factor = 0.9; 	break;
-			case VOL_CHANGE(2): 	factor = 0.8; 	break;
-			case VOL_CHANGE(3): 	factor = 0.7; 	break;
-			case VOL_CHANGE(4): 	factor = 0.6; 	break;
-			case VOL_CHANGE(5): 	factor = 0.5; 	break;
-			case VOL_CHANGE(6): 	factor = 0.4; 	break;
-			case VOL_CHANGE(7): 	factor = 0.3; 	break;
-			case VOL_CHANGE(8): 	factor = 0.2; 	break;
-			case VOL_CHANGE(9): 	factor = 0.1; 	break;
-			case VOL_CHANGE(10): 	factor = 0.125; break;
-			case VOL_CHANGE(11): 	factor = 0.250; break;
-			case VOL_CHANGE(12): 	factor = 0.789; break;
-			case VOL_CHANGE(13): 	factor = 0.654; break;
-			case VOL_CHANGE(14): 	factor = 0.456; break;
-			case VOL_CHANGE(15): 	factor = 0.987; break;
+	if(fin != NULL) {
+		start = clock();
+		
+		//---------------------------------------------------------------------
+		// PROCESSING
+		while(fgets(line, 32, fin) != NULL) {
+			if(linectr == volchange[v]) {
+				if(linectr > 0) factor -= 0.0625;
+				v++;
+			}
+			
+			int16_t scaledvolume = scaleVolume(atoi(line), factor);
+			
+			// Output to file
+			//sprintf(res, "%.3f\t\t%d\n", factor, scaledvolume);
+			//fputs(res, fout);
+			
+			linectr++;
+			
 		}
-		sprintf(res, "%d\n", scaleVolume(atoi(line), factor));
-		fputs(res, fout);
-	}
-	
-	end = clock();
-	
-	printf("Program took %0.fms.", (double)end-start/CLOCKS_PER_SEC);
-	
-	// Clean
-	fclose(fout);
-	fclose(fin);
+		//---------------------------------------------------------------------
+		
+		end = clock();
+		
+		printf("Program took %0.fms.", (double)end-start/CLOCKS_PER_SEC);
+		
+		fclose(fout);
+		fclose(fin);
+	} else { printf("Check source file parameter. Try again."); }
 	
 	return 0;
 }
