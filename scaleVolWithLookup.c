@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 		
 		end = clock();
 	
-		printf("Program took %fms.", (double)end-start/CLOCKS_PER_SEC);
+		printf("Program took %fms\n", (double)(end-start)/CLOCKS_PER_SEC);
 		
 		fclose(fout);
 		fclose(fin);
